@@ -30,7 +30,7 @@ from .models import simulation
 
 
 class OutputFormats(Enum):
-    JSON ='JSON'
+    JSON = 'JSON'
     DATAFRAME = 'DATAFRAME'
     DICT = 'DICT'
 
