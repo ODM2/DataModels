@@ -28,7 +28,11 @@ from .models import results
 from .models import samplingfeatures
 from .models import simulation
 
+import warnings
+warnings.simplefilter("ignore", category=sqlalchemy.exc.SAWarning)
+
 OUTPUT_FORMATS = ('json', 'dataframe', 'dict')
+
 
 
 class Base():
@@ -84,7 +88,7 @@ class ODM2Engine:
 
         # guard against invalid output_format strings
         if output_format not in OUTPUT_FORMATS:
-            raise ValueError(f':param output_format = {output_format}, which is not one of the following valid output_format strings: {OUTPUT_FORMATS}')
+            raise ValueError(f':argument output_format={output_format}, is not a valid output_format strings: {OUTPUT_FORMATS}')
         
         # use SQLAlchemy session to read_query and return response in the designated output_format
         with self.session_maker() as session:
