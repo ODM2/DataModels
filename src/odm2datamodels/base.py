@@ -28,11 +28,12 @@ from .models import results
 from .models import samplingfeatures
 from .models import simulation
 
+import warnings
+warnings.simplefilter("ignore", category=sqlalchemy.exc.SAWarning)
 
-class OutputFormats(Enum):
-    JSON ='JSON'
-    DATAFRAME = 'DATAFRAME'
-    DICT = 'DICT'
+OUTPUT_FORMATS = ('json', 'dataframe', 'dict')
+
+
 
 class Base():
     
@@ -82,19 +83,25 @@ class ODM2Engine:
 
     def read_query(self, 
             query: Union[Query, Select],
-            output_format:OutputFormats=OutputFormats.JSON,
+            output_format:str='json',
             orient:str='records') -> Union[str, pd.DataFrame]:
+
+        # guard against invalid output_format strings
+        if output_format not in OUTPUT_FORMATS:
+            raise ValueError(f':argument output_format={output_format}, is not a valid output_format strings: {OUTPUT_FORMATS}')
+        
+        # use SQLAlchemy session to read_query and return response in the designated output_format
         with self.session_maker() as session:
             if isinstance(query, Select):
                 df = pd.read_sql(query, session.bind)
             else:
                 df = pd.read_sql(query.statement, session.bind)
             
-            if output_format == OutputFormats.JSON:
+            if output_format == 'json':
                 return df.to_json(orient=orient)
-            elif output_format == OutputFormats.DATAFRAME:
+            elif output_format == 'dataframe':
                 return df
-            elif output_format == OutputFormats.DICT:
+            elif output_format == 'dict':
                 return df.to_dict()
             raise TypeError("Unknown output format")
 
@@ -117,7 +124,7 @@ class ODM2Engine:
             return pkey_value
 
     def read_object(self, model:Type[Base], pkey:Union[int, str], 
-            output_format: OutputFormats=OutputFormats.DICT, 
+            output_format:str='dict', 
             orient:str='records') -> Dict[str, Any]:
 
         with self.session_maker() as session:
@@ -126,8 +133,14 @@ class ODM2Engine:
             if obj is None: raise ObjectNotFound(f"No '{model.__name__}' object found with {pkey_name} = {pkey}")
             session.commit()
 
+            # convert obj_dict to a dictionary if it isn't one already
             obj_dict = obj.to_dict()
-            if output_format == OutputFormats.DICT:
+
+            # guard against invalid output_format strings
+            if output_format not in OUTPUT_FORMATS:
+                raise ValueError(f':param output_format = {output_format}, which is not one of the following valid output_format strings: {OUTPUT_FORMATS}')
+
+            if output_format == 'dict':
                 return obj_dict
 
             else:
@@ -139,9 +152,9 @@ class ODM2Engine:
                         obj_dict[key] = new_value
 
                 obj_df = pd.DataFrame.from_dict(obj_dict)
-                if output_format == OutputFormats.DATAFRAME:
+                if output_format == 'dataframe':
                     return obj_df
-                elif output_format == OutputFormats.JSON:
+                elif output_format == 'json':
                     return obj_df.to_json(orient=orient)
                 raise TypeError("Unknown output format")
 
