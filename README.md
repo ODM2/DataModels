@@ -7,9 +7,14 @@ odm2datamodels is a Python package that provides a set of object-relational mapp
 The primary is the `ODM2DataModels` class, which once instantiated, provides access to the set of ORM ODM2.1 data models and an instance of an ODM2Engine which provide utility function to perform basic Create, Read, Update, Delete operations as well are read execution of custom SQLQueries constructed using a SQLAlchemy [Select object](https://docs.sqlalchemy.org/en/14/orm/queryguide.html#select-statements) or [Query Object](https://docs.sqlalchemy.org/en/14/orm/query.html#sqlalchemy.orm.Query)     
 
 ## How to install?
-Presently the build files are only available on our [github repository](https://github.com/ODM2/ODM2DataModels) 
+### PIP
+`pip install odm2datamodels`
 
-Though we are aiming to release to the [Python Package Index (PyPI)](https://pypi.org/) and [Conda](https://docs.conda.io/en/latest/) in the near future. 
+### Raw Files
+The build files are also available on our [github repository](https://github.com/ODM2/ODM2DataModels) 
+
+### Conda 
+Conda install is not presently supported, though we are looking to expand support to include [Conda](https://docs.conda.io/en/latest/) in the near future. 
 
 ## Testing and Database Dialect Support
 ### Testing Method
