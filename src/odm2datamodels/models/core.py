@@ -44,8 +44,5 @@ class SamplingFeatures():
 class TaxonomicClassifiers():
 	"""http://odm2.github.io/ODM2/schemas/ODM2_Current/tables/ODM2Core_TaxonomicClassifiers.html"""
 
-class CV_Units():
-	"""http://odm2.github.io/ODM2/schemas/ODM2_Current/tables/ODM2Core_Units.html"""
-
 class Variables():
 	"""http://odm2.github.io/ODM2/schemas/ODM2_Current/tables/ODM2Core_Variables.html"""

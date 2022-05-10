@@ -7,7 +7,7 @@ import geoalchemy2
 
 import pickle
 from enum import Enum
-from typing import Dict, Union, Any, Type
+from typing import Dict, Union, Any, Type, List
 import warnings
 
 import pandas as pd
@@ -105,17 +105,32 @@ class ODM2Engine:
                 return df.to_dict()
             raise TypeError("Unknown output format")
 
-    def insert_query(self) -> None:
-        """Placeholder for bulk insert"""
-        #accept dataframe & model
-        #use pandas to_sql method to perform insert
-        #if except return false or maybe raise error 
-        #else return true
-        raise NotImplementedError
+    def insert_query(self, objs:List[object]) -> None:
+        with self.session_maker() as session:
+            session.add_all(objs)
+            session.commit()
 
-    def create_object(self, obj:object) -> Union[int, str]:
-        pkey_name = obj.get_pkey_name()
-        setattr(obj, pkey_name, None)
+    def create_object(self, obj:object, preserve_pkey:bool=False) -> Union[int, str]:
+        """ Accepts an ORM mapped model and created a corresponding database record
+
+        Accepts on one of the ORM mapped models and creates the corresponding database 
+        record, returning the primary key of the newly created record.
+
+        Arguments:
+            obj:object - The ORM mapped model
+            preserve_pkey:bool - Default=False - flag indicating if the primary key for 
+                the object should be preserved. Avoid in general use cases where database has 
+                a serial that auto assigned primary key, however this can be set to True to
+                specify you own the primary key value.  
+
+        Returns:
+            primary key: Union[int, str]        
+
+        """
+        
+        if not perserve_pkey:
+            pkey_name = obj.get_pkey_name()
+            setattr(obj, pkey_name, None)
 
         with self.session_maker() as session:
             session.add(obj)
