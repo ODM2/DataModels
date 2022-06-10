@@ -102,7 +102,7 @@ class ODM2Engine:
             elif output_format == 'dataframe':
                 return df
             elif output_format == 'dict':
-                return df.to_dict()
+                return df.to_dict(orient=orient)
             raise TypeError("Unknown output format")
 
     def insert_query(self, objs:List[object]) -> None:
