@@ -128,7 +128,7 @@ class ODM2Engine:
 
         """
         
-        if not perserve_pkey:
+        if not preserve_pkey:
             pkey_name = obj.get_pkey_name()
             setattr(obj, pkey_name, None)
 
