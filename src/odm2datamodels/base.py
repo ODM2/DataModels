@@ -83,7 +83,7 @@ class ODM2Engine:
 
     def read_query(self, 
             query: Union[Query, Select],
-            output_format:str='json',
+            output_format:str='dict',
             orient:str='records') -> Union[str, pd.DataFrame]:
 
         # guard against invalid output_format strings
