@@ -53,7 +53,7 @@ class Base():
                 setattr(instance, key, value)
         return instance
 
-    def to_dict(self) -> Dict[str,Any]:
+    def to_dict(self) -> Dict[str, Any]:
         """Converts attributes into a dictionary"""
         columns = self.__table__.columns.keys()
         output_dict = {}
