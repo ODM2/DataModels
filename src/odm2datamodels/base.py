@@ -53,7 +53,7 @@ class Base():
                 setattr(instance, key, value)
         return instance
 
-    def to_dict(self) -> Dict[str,Any]:
+    def to_dict(self) -> Dict[str, Any]:
         """Converts attributes into a dictionary"""
         columns = self.__table__.columns.keys()
         output_dict = {}
@@ -83,8 +83,31 @@ class ODM2Engine:
 
     def read_query(self, 
             query: Union[Query, Select],
-            output_format:str='json',
-            orient:str='records') -> Union[str, pd.DataFrame]:
+            output_format:str='dict',
+            orient:str='records') -> Union[str, pd.DataFrame, Dict[Any, Any]]:
+        """
+        Executes valid SQLAlchemy query and returns the result
+
+        Arguments: 
+            query:Query|Select - valid sqlalchemy.orm.Query or sqlalchemy.select instance
+
+            Optionals: 
+                output_format:str - string corresponding to desired return datatype:
+                    'json' - json string 
+                    'dataframe' - pandas.DataFrame object
+                    'dict' (default) - python Dictionary object    
+                orient:str - string corresponding to desired output formatting. 
+                        'dict' (default) : dict like {column -> {index -> value}}
+                        'list' : dict like {column -> [values]}
+                        'series' : dict like {column -> Series(values)}
+                        'split' : dict like {'index' -> [index], 'columns' -> [columns], 'data' -> [values]}
+                        'tight' : dict like {'index' -> [index], 'columns' -> [columns], 'data' -> [values], 'index_names' -> [index.names], 'column_names' -> [column.names]}
+                        'records' : list like [{column -> value}, … , {column -> value}]
+                        'index' : dict like {index -> {column -> value}}
+                    See pandas orient documentation on 'to_dict' and 'to_json' for additional information  
+        Returns:
+            str|pandas.DataFrame|Dict based on specified output format 
+        """
 
         # guard against invalid output_format strings
         if output_format not in OUTPUT_FORMATS:
@@ -102,10 +125,20 @@ class ODM2Engine:
             elif output_format == 'dataframe':
                 return df
             elif output_format == 'dict':
-                return df.to_dict()
+                return df.to_dict(orient=orient)
             raise TypeError("Unknown output format")
 
     def insert_query(self, objs:List[object]) -> None:
+        """
+        Inserts list of ODM2DataModels into the database
+
+        Arguments: 
+            objs:List[ODM2DataModel] - list of ODM2DataModels objects to be inserted into the database
+
+        Returns: 
+            None 
+        """
+        
         with self.session_maker() as session:
             session.add_all(objs)
             session.commit()
@@ -128,7 +161,7 @@ class ODM2Engine:
 
         """
         
-        if not perserve_pkey:
+        if not preserve_pkey:
             pkey_name = obj.get_pkey_name()
             setattr(obj, pkey_name, None)
 
@@ -141,7 +174,34 @@ class ODM2Engine:
     def read_object(self, model:Type[Base], pkey:Union[int, str], 
             output_format:str='dict', 
             orient:str='records') -> Dict[str, Any]:
+        """
+            Executes select query to read the requested DataModel object from the database     
+            
+            Arguments: 
+                models:ODM2DataModel - The class of the ODM2DataModel to be read from the database
+                pkey:int|str - the primary key value of the object
 
+                Optionals: 
+                    output_format:str - string corresponding to desired return datatype:
+                        'json' - json string 
+                        'dataframe' - pandas.DataFrame object
+                        'dict' (default) - python Dictionary object    
+                    orient:str - string corresponding to desired output formatting. 
+                            'dict' (default) : dict like {column -> {index -> value}}
+                            'list' : dict like {column -> [values]}
+                            'series' : dict like {column -> Series(values)}
+                            'split' : dict like {'index' -> [index], 'columns' -> [columns], 'data' -> [values]}
+                            'tight' : dict like {'index' -> [index], 'columns' -> [columns], 'data' -> [values], 'index_names' -> [index.names], 'column_names' -> [column.names]}
+                            'records' : list like [{column -> value}, … , {column -> value}]
+                            'index' : dict like {index -> {column -> value}}
+                        See pandas orient documentation on 'to_dict' and 'to_json' for additional information  
+        
+            Returns:
+                str|pandas.DataFrame|Dict based on specified output format 
+        """
+
+        #TODO - this method is more complicated than it needs to be
+        #Simplify the last if else statement
         with self.session_maker() as session:
             obj = session.get(model, pkey)
             pkey_name = model.get_pkey_name()
@@ -175,6 +235,19 @@ class ODM2Engine:
 
 
     def update_object(self, model:Type[Base], pkey:Union[int,str], data:Dict[str, Any]) -> None:
+        """
+            Updates data record in the database with provided dictionary of updates attributes
+
+            Arguments: 
+                models:ODM2DataModel - The class of the ODM2DataModel to be read from the database
+                pkey:int|str - the primary key value of the object
+                data:Dict[str, Any] - dictionary of updated attributes with keys corresponding to 
+                    attribute name and values corresponding to new value.
+            
+            Returns: 
+                None    
+        """
+        
         if not isinstance(data, dict):
             data = data.dict()
         pkey_name = model.get_pkey_name()
@@ -187,6 +260,16 @@ class ODM2Engine:
             session.commit()
 
     def delete_object(self, model:Type[Base], pkey:Union[int, str]) -> None:
+        """
+            Deletes the object from the database
+
+            Arguments: 
+                models:ODM2DataModel - The class of the ODM2DataModel to be read from the database
+                pkey:int|str - the primary key value of the object
+
+            Returns: 
+                None
+        """
         with self.session_maker() as session:
             obj = session.get(model, pkey)
             pkey_name = model.get_pkey_name()
